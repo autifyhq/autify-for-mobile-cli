@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+# Upload to Autify for Mobile
+set -e
+
+readonly API_BASE_ADDRESS="https://mobile-app.autify.com/api/v1"
+readonly WORKIND_DIR="./"
+readonly ZIP_NAME="upload.zip"
+
+
+info() {
+  echo -e "$1"
+}
+
+success() {
+  echo -e "\033[00;32m $1 \033[0m"
+}
+
+error() {
+  echo -e "\033[00;31m $1 \033[0m"
+}
+
+create_app_zip() {
+  cp -r "${AUTIFY_APP_DIR_PATH}" "${WORKIND_DIR}"
+
+  APP_ZIP_PATH="./${ZIP_NAME}"
+  APP_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
+
+  info "create zip file"
+  zip -r "${APP_ZIP_PATH}" "${APP_NAME}"
+}
+
+main() {
+  create_app_zip
+
+  TOKEN_HEADER="Authorization: Bearer ${AUTIFY_UPLOAD_TOKEN}"
+  API_UPLOAD_ADDRESS="${API_BASE_ADDRESS}/projects/${AUTIFY_PROJECT_ID}/builds"
+  RESPONSE=$(curl -X POST "${API_UPLOAD_ADDRESS}" -H "accept: application/json" -H "${TOKEN_HEADER}" -H "Content-Type: multipart/form-data" -F "file=@${APP_ZIP_PATH};type=application/zip" -w '\n%{http_code}' -s)
+
+  # http status
+  HTTP_STATUS=$(echo "$RESPONSE" | tail -n 1)
+  # body
+  BODY=$(echo "$RESPONSE" | sed '$d')
+  # set env
+  envman add --key "AUTIFY_UPLOAD_STEP_RESULT_JSON" --value "$BODY"
+
+  if [[ "$HTTP_STATUS" != "201" ]]; then
+    error "$BODY"
+    exit 1
+  fi
+
+  success "$BODY"
+}
+
+# parameters
+info "parameters:"
+info "* upload_token: ${AUTIFY_UPLOAD_TOKEN}"
+info "* project_id: ${AUTIFY_PROJECT_ID}"
+info "* app_dir_path: ${AUTIFY_APP_DIR_PATH}"
+
+# run
+main "$@"
