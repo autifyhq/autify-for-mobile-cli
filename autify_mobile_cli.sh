@@ -6,7 +6,7 @@ set -e
 readonly API_BASE_ADDRESS="https://mobile-app.autify.com/api/v1"
 readonly WORKIND_DIR="./"
 readonly ZIP_NAME="upload.zip"
-
+readonly AVAILAVLE_ARCH="x86_64"
 
 info() {
   echo -e "$1"
@@ -30,7 +30,21 @@ create_app_zip() {
   zip -r "${APP_ZIP_PATH}" "${APP_NAME}"
 }
 
+validate_app_arch() {
+  APP_FILE_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
+  BINARY_NAME=$(echo "${APP_FILE_NAME}" | sed 's/.app//')
+  ARCH_INFO=$(xcrun lipo -info "${AUTIFY_APP_DIR_PATH}/${BINARY_NAME}")
+
+  if [ "$(echo ${ARCH_INFO} | grep ${AVAILAVLE_ARCH} )" ] ;then
+    info "architecture is ok"
+  else
+    error "Unsupported architecture（${AVAILAVLE_ARCH} only）"
+    exit 1
+  fi
+}
+
 main() {
+  validate_app_arch
   create_app_zip
 
   TOKEN_HEADER="Authorization: Bearer ${AUTIFY_UPLOAD_TOKEN}"
