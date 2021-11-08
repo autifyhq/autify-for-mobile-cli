@@ -30,16 +30,31 @@ create_app_zip() {
   zip -r "${APP_ZIP_PATH}" "${APP_NAME}"
 }
 
-validate_app_arch() {
-  APP_FILE_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
-  BINARY_NAME=$(echo "${APP_FILE_NAME}" | sed 's/.app//')
-  ARCH_INFO=$(xcrun lipo -info "${AUTIFY_APP_DIR_PATH}/${BINARY_NAME}")
-
-  if [ "$(echo ${ARCH_INFO} | grep ${AVAILAVLE_ARCH} )" ] ;then
-    info "architecture is ok"
+is_exist_xcrun() {
+  EXIST_XCRUN=true
+  if type "xcrun" > /dev/null 2>&1; then
+    EXIST_XCRUN=true
   else
-    error "Unsupported architecture（${AVAILAVLE_ARCH} only）"
-    exit 1
+    EXIST_XCRUN=false
+  fi
+
+  echo $EXIST_XCRUN
+}
+
+validate_app_arch() {
+  if $(is_exist_xcrun) ; then
+    APP_FILE_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
+    BINARY_NAME=$(echo "${APP_FILE_NAME}" | sed 's/.app//')
+    ARCH_INFO=$(xcrun lipo -info "${AUTIFY_APP_DIR_PATH}/${BINARY_NAME}")
+
+    if [ "$(echo ${ARCH_INFO} | grep ${AVAILAVLE_ARCH} )" ] ;then
+      info "Architecture is ok"
+    else
+      error "Unsupported architecture（${AVAILAVLE_ARCH} only）"
+      exit 1
+    fi
+  else
+    info "Skip checking architecture"
   fi
 }
 
