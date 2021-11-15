@@ -4,7 +4,7 @@
 set -e
 
 readonly API_BASE_ADDRESS="https://mobile-app.autify.com/api/v1"
-readonly WORKIND_DIR="./"
+readonly WORKING_DIR="./"
 readonly ZIP_NAME="upload.zip"
 readonly AVAILAVLE_ARCH="x86_64"
 
@@ -21,7 +21,7 @@ error() {
 }
 
 create_app_zip() {
-  cp -r "${AUTIFY_APP_DIR_PATH}" "${WORKIND_DIR}"
+  cp -r "${AUTIFY_APP_DIR_PATH}" "${WORKING_DIR}"
 
   APP_ZIP_PATH="./${ZIP_NAME}"
   APP_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
