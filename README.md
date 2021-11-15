@@ -6,7 +6,7 @@
  - autify\_mobile_cli.sh
 
 ### autify\_mobile_cli 
-upload app file for autify.
+upload iOS app file for autify.
 
 #### Environment Variable
 
