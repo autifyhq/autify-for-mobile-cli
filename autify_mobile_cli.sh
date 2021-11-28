@@ -4,9 +4,9 @@
 set -e
 
 readonly API_BASE_ADDRESS="https://mobile-app.autify.com/api/v1"
-readonly WORKIND_DIR="./"
+readonly WORKING_DIR="./"
 readonly ZIP_NAME="upload.zip"
-
+readonly AVAILAVLE_ARCH="x86_64"
 
 info() {
   echo -e "$1"
@@ -21,7 +21,7 @@ error() {
 }
 
 create_app_zip() {
-  cp -r "${AUTIFY_APP_DIR_PATH}" "${WORKIND_DIR}"
+  cp -r "${AUTIFY_APP_DIR_PATH}" "${WORKING_DIR}"
 
   APP_ZIP_PATH="./${ZIP_NAME}"
   APP_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
@@ -30,7 +30,36 @@ create_app_zip() {
   zip -r "${APP_ZIP_PATH}" "${APP_NAME}"
 }
 
+is_exist_xcrun() {
+  EXIST_XCRUN=true
+  if type "xcrun" > /dev/null 2>&1; then
+    EXIST_XCRUN=true
+  else
+    EXIST_XCRUN=false
+  fi
+
+  echo $EXIST_XCRUN
+}
+
+validate_app_arch() {
+  if $(is_exist_xcrun) ; then
+    APP_FILE_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
+    BINARY_NAME=$(echo "${APP_FILE_NAME}" | sed 's/.app//')
+    ARCH_INFO=$(xcrun lipo -info "${AUTIFY_APP_DIR_PATH}/${BINARY_NAME}")
+
+    if [ "$(echo ${ARCH_INFO} | grep ${AVAILAVLE_ARCH} )" ] ;then
+      info "Architecture is ok"
+    else
+      error "Unsupported architecture（${AVAILAVLE_ARCH} only）"
+      exit 1
+    fi
+  else
+    info "Skip checking architecture"
+  fi
+}
+
 main() {
+  validate_app_arch
   create_app_zip
 
   TOKEN_HEADER="Authorization: Bearer ${AUTIFY_UPLOAD_TOKEN}"
