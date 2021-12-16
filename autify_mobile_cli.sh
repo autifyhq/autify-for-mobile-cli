@@ -59,7 +59,7 @@ validate_app_arch() {
 }
 
 main() {
-  validate_app_arch
+  # validate_app_arch
   create_app_zip
 
   TOKEN_HEADER="Authorization: Bearer ${AUTIFY_UPLOAD_TOKEN}"
