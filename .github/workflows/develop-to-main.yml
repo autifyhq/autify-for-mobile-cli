@@ -1,0 +1,32 @@
+name: create PR for main branch from develop branch
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  git-pr-release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Ruby 2.6
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6
+
+    - name: Create pull request
+      env:
+        GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GIT_PR_RELEASE_BRANCH_STAGING: develop
+        GIT_PR_RELEASE_BRANCH_PRODUCTION: main
+        GIT_PR_RELEASE_TEMPLATE: .github/workflows/develop-to-main.template
+        GIT_PR_RELEASE_VERSION: 1.9.0
+        GIT_PR_RELEASE_LABELS: release
+      run: |
+        git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        gem install -N git-pr-release -v $GIT_PR_RELEASE_VERSION
+        git-pr-release --no-fetch
