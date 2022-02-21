@@ -1,0 +1,7 @@
+Merge to main branch from develop branch
+
+## List
+
+<% pull_requests.each do |pr| -%>
+<%= pr.to_checklist_item %>
+<% end -%>
