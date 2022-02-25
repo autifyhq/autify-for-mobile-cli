@@ -71,7 +71,13 @@ main() {
   # body
   BODY=$(echo "$RESPONSE" | sed '$d')
   # set env
-  envman add --key "AUTIFY_UPLOAD_STEP_RESULT_JSON" --value "$BODY"
+  if [ -n "$BITRISE_IO" ];then
+    envman add --key "AUTIFY_UPLOAD_STEP_RESULT_JSON" --value "$BODY"
+  elif [ -n "$CIRCLECI" ];then
+    echo "export AUTIFY_UPLOAD_STEP_RESULT_JSON=$BODY" >> $BASH_ENV
+  elif [ -n "$GITHUB_ACTIONS" ];then
+    echo "AUTIFY_UPLOAD_STEP_RESULT_JSON=$BODY" >> $GITHUB_ENV
+  fi
 
   if [[ "$HTTP_STATUS" != "201" ]]; then
     error "$BODY"
