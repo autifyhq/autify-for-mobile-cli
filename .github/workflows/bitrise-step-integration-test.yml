@@ -22,4 +22,4 @@ jobs:
           BITRISE_WORKFLOW_ID: ${{ secrets.BITRISE_WORKFLOW_ID }}
         run: |
           COMMIT_HASH=`git rev-parse HEAD`
-          curl https://app.bitrise.io/app/${BITRISE_SLUG_ID}/build/start.json --data '{"hook_info":{"type":"bitrise","build_trigger_token":"${BITRISE_API_TOKEN}"},"build_params":{"branch":"main","workflow_id":"${BITRISE_WORKFLOW_ID}","environments":[{"mapped_to":"AUTIFY_MOBILE_SCRIPT_BRANCH","value":"${GITHUB_HEAD_REF}","is_expand":true}]},"triggered_by":"curl"}'
+          curl -X POST "https://api.bitrise.io/v0.1/apps/${BITRISE_SLUG_ID}/builds" -H "accept: application/json" -H "Authorization: ${BITRISE_API_TOKEN}" -H "Content-Type: application/json" -d "{ \"build_params\": { \"commit_message\": \"${COMMIT_HASH}\", \"workflow_id\": \"${BITRISE_WORKFLOW_ID}\" }, \"environments\": [{\"mapped_to\":\"AUTIFY_MOBILE_SCRIPT_BRANCH\",\"value\":\"${GITHUB_HEAD_REF}\",\"is_expand\":true}], \"hook_info\": { \"type\": \"bitrise\" }}"
