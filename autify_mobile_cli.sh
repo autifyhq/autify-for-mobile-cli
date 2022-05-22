@@ -41,11 +41,23 @@ is_exist_xcrun() {
   echo $EXIST_XCRUN
 }
 
+binary_file_path() {
+  APP_FILE_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
+  BINARY_NAME=$(echo "${APP_FILE_NAME}" | sed 's/.app//')
+  BINARY_FILE_PATH="${AUTIFY_APP_DIR_PATH}/${BINARY_NAME}"
+
+  if [ -e $BINARY_FILE_PATH ]; then
+    BINARY_FILE_PATH=$BINARY_FILE_PATH
+  else
+    BINARY_FILE_PATH=""
+  fi
+
+  echo $BINARY_FILE_PATH
+}
+
 validate_app_arch() {
-  if $(is_exist_xcrun) ; then
-    APP_FILE_NAME=$(basename "${AUTIFY_APP_DIR_PATH}")
-    BINARY_NAME=$(echo "${APP_FILE_NAME}" | sed 's/.app//')
-    ARCH_INFO=$(xcrun lipo -info "${AUTIFY_APP_DIR_PATH}/${BINARY_NAME}")
+  if $(is_exist_xcrun) && [ -n "$(binary_file_path)" ] ; then
+    ARCH_INFO=$(xcrun lipo -info "$(binary_file_path)")
 
     if [ "$(echo ${ARCH_INFO} | grep ${AVAILAVLE_ARCH} )" ] ;then
       info "Architecture is ok"
@@ -59,7 +71,7 @@ validate_app_arch() {
 }
 
 main() {
-  # validate_app_arch
+  validate_app_arch
   create_app_zip
 
   TOKEN_HEADER="Authorization: Bearer ${AUTIFY_UPLOAD_TOKEN}"
